@@ -1,19 +1,16 @@
-package readings
+package gameStats
 
-import "github.com/zdunker/webframe"
+import (
+	"github.com/zdunker/gameStats/views"
+	"github.com/zdunker/webframe"
+)
 
-func RunReadingServer() {
+func RunServer() {
 	web := webframe.NewEngine()
-	readingG := web.NewGroup("/readings")
-	readingG.GET("", getReadings)
-	readingG.POST("", postReadings)
+	// readingG := web.NewGroup("/readings")
+	// readingG.GET("", views.GetReadings)
+	// readingG.POST("", views.PostReadings)
+	dota := web.NewGroup("/dota2")
+	dota.GET("/match", views.GetMatch)
 	web.Run(":8080")
-}
-
-func getReadings(ctx *webframe.Context) {
-
-}
-
-func postReadings(ctx *webframe.Context) {
-
 }
