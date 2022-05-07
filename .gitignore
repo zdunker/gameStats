@@ -15,3 +15,4 @@
 # vendor/
 cmd/opendotaapi.yaml
 .vscode/*
+go.sum
