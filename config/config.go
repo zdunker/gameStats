@@ -3,15 +3,22 @@ package config
 var c conf
 
 type conf struct {
-	dotaConfig *dotaConfig
+	DotaConfig     *dotaConfig
+	Infrastructure *infrastructure
 }
+
+type infrastructure struct {
+	DBConfig *dbConfig
+}
+
+// -----------------------------------------------------------------------------
 
 func LoadConfig(filepath string) error {
 	dotaconfig, err := loadDotaConfig(filepath)
 	if err != nil {
 		return err
 	}
-	c.dotaConfig = dotaconfig
+	c.DotaConfig = dotaconfig
 
 	return nil
 }
@@ -21,5 +28,5 @@ func GetConfig() *conf {
 }
 
 func (c *conf) Dota() *dotaConfig {
-	return c.dotaConfig
+	return c.DotaConfig
 }
