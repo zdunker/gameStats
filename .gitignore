@@ -16,3 +16,4 @@
 cmd/opendotaapi.yaml
 .vscode/*
 go.sum
+*.yaml
