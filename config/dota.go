@@ -7,8 +7,8 @@ import (
 )
 
 type dotaConfig struct {
-	DotaAPIPrefix string `yaml:"api_prefix"`
-	DotaAPIKey    string `yaml:"api_key"`
+	DotaAPIPrefix string `mapstructure:"api_prefix"`
+	DotaAPIKey    string `mapstructure:"api_key"`
 }
 
 func loadDotaConfig(filePath string) (*dotaConfig, error) {

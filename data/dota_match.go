@@ -1,58 +1,74 @@
 package data
 
-import "github.com/go-pg/pg/v10"
+import (
+	"context"
+
+	"github.com/uptrace/bun"
+)
 
 type match struct {
-	MatchID   int64          `pg:"match_id"`
-	MatchData map[string]any `pg:"match_data"`
+	bun.BaseModel `bun:"table:dota_match"`
+
+	MatchID   int64          `bun:"match_id"`
+	MatchData map[string]any `bun:"match_data"`
 }
 
 type dotaMatchService interface {
 	dotaMatchReadOnlyService
-	Write(matchID int64, data map[string]any) error
+	Write(ctx context.Context, matchID int64, data map[string]any) error
 }
 
 type dotaMatchReadOnlyService interface { // read-only interface
-	Read(matchID int64) (match, error)
+	Read(ctx context.Context, matchID int64) (match, error)
 }
 
-var _ dotaMatchReadOnlyService = (*dotaMatchReadOnlyPGHelper)(nil)
+var _ dotaMatchReadOnlyService = (*dotaMatchReadOnlyHelper)(nil)
 
-type dotaMatchReadOnlyPGHelper struct { // a postgres helper for reading dota matches data
-	client *pg.DB // better a read-only client
+type dotaMatchReadOnlyHelper struct { // a postgres helper for reading dota matches data
+	client *bun.DB // better a read-only client
 }
 
-func (h dotaMatchReadOnlyPGHelper) Read(matchID int64) (match, error) {
+func (h dotaMatchReadOnlyHelper) Read(ctx context.Context, matchID int64) (match, error) {
 	m := new(match)
-	err := h.client.Model(m).Where("match_id = ?", matchID).Select()
+	_, err := h.client.NewSelect().
+		Model(m).
+		Where("match_id = ?", matchID).
+		Exec(ctx)
 	return *m, err
 }
 
-var _ dotaMatchService = (*dotaMatchRWPGHelper)(nil)
+var _ dotaMatchService = (*dotaMatchRWHelper)(nil)
 
-type dotaMatchRWPGHelper struct { // a postgres helper for writing dota matches data
-	client *pg.DB
+type dotaMatchRWHelper struct { // a postgres helper for writing dota matches data
+	client *bun.DB
 }
 
-func (h dotaMatchRWPGHelper) Write(matchID int64, data map[string]any) error {
+func (h dotaMatchRWHelper) Write(ctx context.Context, matchID int64, data map[string]any) error {
 	m := &match{
 		MatchID:   matchID,
 		MatchData: data,
 	}
-	_, err := h.client.Model(m).WherePK().OnConflict("DO NOTHING").Insert()
+	_, err := h.client.NewInsert().
+		Model(m).
+		On("CONFLICT (match_id) DO UPDATE").
+		Set("match_data = EXCLUDED.match_data").
+		Exec(ctx)
 	return err
 }
 
-func (h dotaMatchRWPGHelper) Read(matchID int64) (match, error) {
+func (h dotaMatchRWHelper) Read(ctx context.Context, matchID int64) (match, error) {
 	m := new(match)
-	err := h.client.Model(m).Where("match_id = ?", matchID).Select()
+	_, err := h.client.NewSelect().
+		Model(m).
+		Where("match_id = ?", matchID).
+		Exec(ctx)
 	return *m, err
 }
 
-func NewDotaMatchReadOnlyService(client *pg.DB) dotaMatchReadOnlyService {
-	return &dotaMatchReadOnlyPGHelper{client: client}
+func NewDotaMatchReadOnlyService(client *bun.DB) dotaMatchReadOnlyService {
+	return &dotaMatchReadOnlyHelper{client: client}
 }
 
-func NewDotaMatchRWService(client *pg.DB) dotaMatchService {
-	return &dotaMatchRWPGHelper{client: client}
+func NewDotaMatchRWService(client *bun.DB) dotaMatchService {
+	return &dotaMatchRWHelper{client: client}
 }
