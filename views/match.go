@@ -15,11 +15,13 @@ const (
 )
 
 type dotaMatch struct {
-	MatchID        int64 `json:"match_id"`
+	MatchID int64 `json:"match_id"`
+
 	FirstBloodTime int64 `json:"first_blood_time"`
 	StartTime      int64 `json:"start_time"`
-	DireScore      int64 `json:"dire_score"`
-	RadiantScore   int64 `json:"radiant_score"`
+
+	DireScore    int64 `json:"dire_score"`
+	RadiantScore int64 `json:"radiant_score"`
 }
 
 func (m dotaMatch) toMap() map[string]interface{} {
